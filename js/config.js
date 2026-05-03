@@ -1,9 +1,12 @@
 export const firebaseConfig = Object.freeze({
-  apiKey: "PASTE_FIREBASE_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  appId: "PASTE_FIREBASE_APP_ID"
+  apiKey: "AIzaSyDadkmYJYi8fy5zcSPzBec0OZAkShNeapQ",
+  authDomain: "ice-cream-boat-tracker.firebaseapp.com",
+  databaseURL: "https://ice-cream-boat-tracker-default-rtdb.firebaseio.com",
+  projectId: "ice-cream-boat-tracker",
+  storageBucket: "ice-cream-boat-tracker.firebasestorage.app",
+  messagingSenderId: "563587087367",
+  appId: "1:563587087367:web:5b29e6d9f975690214fea2",
+  measurementId: "G-KG8RN9MQY6"
 });
 
 export const appSettings = Object.freeze({
