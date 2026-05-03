@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#083344">
+    <title>Ice Cream Boat Tracker</title>
+    <link rel="icon" href="Images/favicon.ico">
+    <link rel="apple-touch-icon" href="Images/logo192.png">
+    <link rel="manifest" href="site.webmanifest">
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIINfQdft4HPCPbEsY9K8vx3j0B1uZQrEm4="
+      crossorigin=""
+    >
+    <link rel="stylesheet" href="css/styles.css">
+  </head>
+  <body class="map-page">
+    <header class="app-header">
+      <a class="brand" href="./" aria-label="Ice Cream Boat Tracker map">
+        <img src="Images/logo192.png" alt="" width="44" height="44">
+        <span>
+          <strong>Ice Cream Boat Tracker</strong>
+          <small id="connectionStatus">Connecting</small>
+        </span>
+      </a>
+      <nav class="header-actions" aria-label="Tracker pages">
+        <a href="tracker.html">Tracker</a>
+      </nav>
+    </header>
+
+    <main class="map-shell">
+      <div id="map" class="map-canvas" aria-label="Live boat map"></div>
+
+      <section class="map-panel" aria-live="polite">
+        <div class="panel-title">
+          <span class="live-dot" aria-hidden="true"></span>
+          <h1 id="statusText">Waiting for location</h1>
+        </div>
+        <dl class="location-readout">
+          <div>
+            <dt>Coordinates</dt>
+            <dd id="coordinates">Not available</dd>
+          </div>
+          <div>
+            <dt>Accuracy</dt>
+            <dd id="accuracy">Not available</dd>
+          </div>
+          <div>
+            <dt>Updated</dt>
+            <dd id="lastUpdated">Not available</dd>
+          </div>
+        </dl>
+        <div class="button-row">
+          <button id="centerButton" type="button" disabled>Center boat</button>
+          <a id="mapsLink" class="button-like disabled" aria-disabled="true" href="#" target="_blank" rel="noreferrer">Open maps</a>
+        </div>
+      </section>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script type="module" src="js/public-map.js"></script>
+  </body>
+</html>
+

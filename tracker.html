@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#083344">
+    <title>Tracker Console | Ice Cream Boat Tracker</title>
+    <link rel="icon" href="Images/favicon.ico">
+    <link rel="apple-touch-icon" href="Images/logo192.png">
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="stylesheet" href="css/styles.css">
+  </head>
+  <body class="tracker-page">
+    <header class="app-header">
+      <a class="brand" href="./" aria-label="Ice Cream Boat Tracker map">
+        <img src="Images/logo192.png" alt="" width="44" height="44">
+        <span>
+          <strong>Ice Cream Boat Tracker</strong>
+          <small id="authStatus">Signed out</small>
+        </span>
+      </a>
+      <nav class="header-actions" aria-label="Tracker pages">
+        <a href="./">Map</a>
+      </nav>
+    </header>
+
+    <main class="tracker-shell">
+      <section class="tracker-panel">
+        <div class="tracker-heading">
+          <img src="Images/logo512.png" alt="" width="76" height="76">
+          <div>
+            <h1>Tracker Console</h1>
+            <p id="trackerStatus">Sign in to start sending location.</p>
+          </div>
+        </div>
+
+        <form id="authForm" class="auth-form">
+          <label>
+            Email
+            <input id="email" type="email" autocomplete="username" required>
+          </label>
+          <label>
+            Password
+            <input id="password" type="password" autocomplete="current-password" required>
+          </label>
+          <div class="button-row">
+            <button id="signInButton" type="submit">Sign in</button>
+            <button id="signOutButton" type="button" class="secondary" disabled>Sign out</button>
+          </div>
+        </form>
+
+        <div class="tracker-controls">
+          <label>
+            Send interval
+            <select id="sendInterval">
+              <option value="5">5 seconds</option>
+              <option value="10" selected>10 seconds</option>
+              <option value="15">15 seconds</option>
+              <option value="30">30 seconds</option>
+            </select>
+          </label>
+          <div class="button-row">
+            <button id="startButton" type="button" disabled>Start tracking</button>
+            <button id="stopButton" type="button" class="danger" disabled>Stop</button>
+          </div>
+        </div>
+
+        <dl class="tracker-readout">
+          <div>
+            <dt>Location</dt>
+            <dd id="currentCoordinates">Not available</dd>
+          </div>
+          <div>
+            <dt>Accuracy</dt>
+            <dd id="currentAccuracy">Not available</dd>
+          </div>
+          <div>
+            <dt>Last sent</dt>
+            <dd id="lastSent">Not sent</dd>
+          </div>
+          <div>
+            <dt>User UID</dt>
+            <dd id="userUid">Not signed in</dd>
+          </div>
+        </dl>
+      </section>
+    </main>
+
+    <script type="module" src="js/tracker.js"></script>
+  </body>
+</html>
+

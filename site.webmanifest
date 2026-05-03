@@ -1,0 +1,21 @@
+{
+  "name": "Ice Cream Boat Tracker",
+  "short_name": "Boat Tracker",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#e7f7f8",
+  "theme_color": "#083344",
+  "icons": [
+    {
+      "src": "Images/logo192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "Images/logo512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+
