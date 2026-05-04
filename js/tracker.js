@@ -12,6 +12,12 @@ const elements = {
   sendInterval: document.querySelector("#sendInterval"),
   startButton: document.querySelector("#startButton"),
   stopButton: document.querySelector("#stopButton"),
+  broadcastPanel: document.querySelector("#broadcastPanel"),
+  broadcastLabel: document.querySelector("#broadcastLabel"),
+  broadcastMessage: document.querySelector("#broadcastMessage"),
+  broadcastCoordinates: document.querySelector("#broadcastCoordinates"),
+  broadcastLastUpdated: document.querySelector("#broadcastLastUpdated"),
+  broadcastWarning: document.querySelector("#broadcastWarning"),
   currentCoordinates: document.querySelector("#currentCoordinates"),
   currentAccuracy: document.querySelector("#currentAccuracy"),
   lastSent: document.querySelector("#lastSent"),
@@ -26,7 +32,12 @@ const state = {
   user: null,
   watchId: null,
   lastPosition: null,
+  trackingStartedAt: 0,
+  lastPositionAt: 0,
   lastSentAt: 0,
+  permissionDenied: false,
+  locationUnavailable: false,
+  statusTimer: null,
   wakeLock: null
 };
 
@@ -34,6 +45,8 @@ const storedEmail = window.localStorage.getItem("iceCreamBoatTrackerEmail");
 if (storedEmail) elements.email.value = storedEmail;
 
 initTracker();
+startStatusTimer();
+renderBroadcastStatus();
 
 elements.authForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -123,28 +136,41 @@ async function startTracking() {
   }
 
   if (!("geolocation" in navigator)) {
+    state.locationUnavailable = true;
     setTrackerStatus("This browser does not support GPS location.");
+    renderBroadcastStatus();
     return;
   }
 
   if (state.watchId !== null) return;
 
   await requestWakeLock();
+  state.permissionDenied = false;
+  state.locationUnavailable = false;
+  state.trackingStartedAt = Date.now();
   setTrackerStatus("Requesting GPS permission.");
+  renderBroadcastStatus();
 
   state.watchId = navigator.geolocation.watchPosition(
     async (position) => {
       state.lastPosition = position;
+      state.lastPositionAt = Date.now();
+      state.permissionDenied = false;
+      state.locationUnavailable = false;
       renderPosition(position);
+      renderBroadcastStatus();
       await sendPosition(position, "tracking");
     },
     async (error) => {
       setTrackerStatus(formatGeolocationError(error));
       if (error.code === error.PERMISSION_DENIED) {
+        state.permissionDenied = true;
+        state.trackingStartedAt = 0;
         navigator.geolocation.clearWatch(state.watchId);
         state.watchId = null;
         await releaseWakeLock();
       }
+      renderBroadcastStatus();
       updateTrackingButtons();
     },
     {
@@ -163,11 +189,15 @@ async function stopTracking() {
     state.watchId = null;
   }
 
+  state.trackingStartedAt = 0;
+
   if (state.lastPosition && state.user) {
     await sendPosition(state.lastPosition, "stopped", true);
   }
 
   await releaseWakeLock();
+  state.permissionDenied = false;
+  renderBroadcastStatus();
   updateTrackingButtons();
 
   if (state.user) {
@@ -223,6 +253,87 @@ function renderPosition(position) {
   elements.currentAccuracy.textContent = Number.isFinite(accuracy) ? `${Math.round(accuracy)} m` : "Unknown";
 }
 
+function startStatusTimer() {
+  if (state.statusTimer) return;
+  state.statusTimer = window.setInterval(renderBroadcastStatus, 1000);
+}
+
+function renderBroadcastStatus() {
+  const isTracking = state.watchId !== null;
+  const hasPosition = Boolean(state.lastPosition);
+  const ageSeconds = hasPosition ? Math.max(0, Math.floor((Date.now() - state.lastPositionAt) / 1000)) : null;
+  const secondsSinceStart = state.trackingStartedAt
+    ? Math.max(0, Math.floor((Date.now() - state.trackingStartedAt) / 1000))
+    : 0;
+  const isStale = isTracking && ((hasPosition && ageSeconds > 30) || (!hasPosition && secondsSinceStart > 30));
+
+  if (hasPosition) {
+    const { latitude, longitude } = state.lastPosition.coords;
+    elements.broadcastCoordinates.textContent = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+    elements.broadcastLastUpdated.textContent = `Last updated: ${formatElapsed(ageSeconds)}`;
+  } else {
+    elements.broadcastCoordinates.textContent = "Not available";
+    elements.broadcastLastUpdated.textContent = "Not available";
+  }
+
+  if (state.permissionDenied) {
+    setBroadcastMode(
+      "is-warning",
+      "Location Blocked",
+      "NOT BROADCASTING",
+      "Location permission was denied. Enable location permissions for this site, then start tracking again."
+    );
+    return;
+  }
+
+  if (state.locationUnavailable) {
+    setBroadcastMode(
+      "is-warning",
+      "Location Unavailable",
+      "NOT BROADCASTING",
+      "This browser does not support GPS location. Use Safari, Chrome, or another browser with location services."
+    );
+    return;
+  }
+
+  if (isStale) {
+    setBroadcastMode(
+      "is-stale",
+      "Location Stale",
+      "Location stale — check phone screen/location permissions.",
+      "GPS updates stopped for more than 30 seconds."
+    );
+    return;
+  }
+
+  if (isTracking && hasPosition) {
+    setBroadcastMode("is-live", "BROADCASTING LIVE", "Phone is actively sharing location.", "");
+    return;
+  }
+
+  if (isTracking) {
+    setBroadcastMode("is-off", "Starting GPS", "Waiting for the first location update.", "");
+    return;
+  }
+
+  setBroadcastMode("is-off", "Tracking Off", "NOT BROADCASTING", "");
+}
+
+function setBroadcastMode(modeClass, label, message, warning) {
+  elements.broadcastPanel.classList.remove("is-off", "is-live", "is-stale", "is-warning");
+  elements.broadcastPanel.classList.add(modeClass);
+  elements.broadcastLabel.textContent = label;
+  elements.broadcastMessage.textContent = message;
+
+  if (warning) {
+    elements.broadcastWarning.hidden = false;
+    elements.broadcastWarning.textContent = warning;
+  } else {
+    elements.broadcastWarning.hidden = true;
+    elements.broadcastWarning.textContent = "";
+  }
+}
+
 function setSignedInState(user) {
   const isSignedIn = Boolean(user);
   elements.authStatus.textContent = isSignedIn ? "Signed in" : "Signed out";
@@ -250,6 +361,17 @@ function setAuthStatus(message) {
 
 function setTrackerStatus(message) {
   elements.trackerStatus.textContent = message;
+}
+
+function formatElapsed(seconds) {
+  if (!Number.isFinite(seconds)) return "Not available";
+  if (seconds < 1) return "just now";
+  if (seconds === 1) return "1 second ago";
+  if (seconds < 60) return `${seconds} seconds ago`;
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes === 1) return "1 minute ago";
+  return `${minutes} minutes ago`;
 }
 
 async function requestWakeLock() {

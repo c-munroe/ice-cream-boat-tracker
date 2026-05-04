@@ -107,9 +107,14 @@ function renderLocation(data) {
 
   const location = { lat, lng };
   const ageMs = Number.isFinite(timestamp) ? Date.now() - timestamp : Number.POSITIVE_INFINITY;
-  const staleMs = appSettings.staleAfterMinutes * 60 * 1000;
+  const staleMs = 30 * 1000;
   const isStale = ageMs > staleMs;
-  const status = data.status === "stopped" ? "Stopped" : isStale ? "Location is stale" : "Live location";
+  const status =
+    data.status === "stopped"
+      ? "Tracking Off"
+      : isStale
+        ? "Location stale — check phone screen/location permissions."
+        : "BROADCASTING LIVE";
 
   state.latest = location;
   state.marker.setLatLng([lat, lng]);
@@ -169,4 +174,3 @@ function formatAge(timestamp) {
   const elapsedHours = Math.round(elapsedMinutes / 60);
   return `${elapsedHours} hr ago`;
 }
-

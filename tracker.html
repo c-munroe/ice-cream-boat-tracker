@@ -34,6 +34,28 @@
           </div>
         </div>
 
+        <section id="broadcastPanel" class="broadcast-panel is-off" aria-live="assertive">
+          <div class="broadcast-status-line">
+            <span id="broadcastDot" class="broadcast-dot" aria-hidden="true"></span>
+            <div>
+              <p class="broadcast-eyebrow">Broadcast status</p>
+              <h2 id="broadcastLabel">Tracking Off</h2>
+            </div>
+          </div>
+          <p id="broadcastMessage" class="broadcast-message">NOT BROADCASTING</p>
+          <dl class="broadcast-readout">
+            <div>
+              <dt>Location Coordinates</dt>
+              <dd id="broadcastCoordinates">Not available</dd>
+            </div>
+            <div>
+              <dt>Last updated</dt>
+              <dd id="broadcastLastUpdated">Not available</dd>
+            </div>
+          </dl>
+          <p id="broadcastWarning" class="broadcast-warning" hidden></p>
+        </section>
+
         <form id="authForm" class="auth-form">
           <label>
             Email
@@ -89,4 +111,3 @@
     <script type="module" src="js/tracker.js"></script>
   </body>
 </html>
-
