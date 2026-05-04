@@ -157,7 +157,49 @@ button.danger:hover:not(:disabled) {
 .map-canvas {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   background: #bfe9f0;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.leaflet-tile {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+  max-width: none !important;
+}
+
+.leaflet-container img {
+  max-width: none !important;
 }
 
 .map-panel {
@@ -413,4 +455,3 @@ a:focus-visible {
     text-align: left;
   }
 }
-
