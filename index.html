@@ -29,32 +29,36 @@
     </header>
 
     <main class="map-shell">
-      <div id="map" class="map-canvas" aria-label="Live boat map"></div>
+      <div class="map-wrapper">
+        <div id="map" class="map-canvas" aria-label="Live boat map"></div>
 
-      <section class="map-panel" aria-live="polite">
-        <div class="panel-title">
-          <span class="live-dot" aria-hidden="true"></span>
-          <h1 id="statusText">Waiting for location</h1>
+        <div class="map-ui-overlay">
+          <section class="map-panel" aria-live="polite">
+            <div class="panel-title">
+              <span class="live-dot" aria-hidden="true"></span>
+              <h1 id="statusText">Waiting for location</h1>
+            </div>
+            <dl class="location-readout coordinates-display">
+              <div>
+                <dt>Coordinates</dt>
+                <dd id="coordinates">Not available</dd>
+              </div>
+              <div>
+                <dt>Accuracy</dt>
+                <dd id="accuracy">Not available</dd>
+              </div>
+              <div>
+                <dt>Updated</dt>
+                <dd id="lastUpdated">Not available</dd>
+              </div>
+            </dl>
+            <div class="button-row">
+              <button id="centerButton" type="button" disabled>Center boat</button>
+              <a id="mapsLink" class="button-like disabled" aria-disabled="true" href="#" target="_blank" rel="noreferrer">Open maps</a>
+            </div>
+          </section>
         </div>
-        <dl class="location-readout">
-          <div>
-            <dt>Coordinates</dt>
-            <dd id="coordinates">Not available</dd>
-          </div>
-          <div>
-            <dt>Accuracy</dt>
-            <dd id="accuracy">Not available</dd>
-          </div>
-          <div>
-            <dt>Updated</dt>
-            <dd id="lastUpdated">Not available</dd>
-          </div>
-        </dl>
-        <div class="button-row">
-          <button id="centerButton" type="button" disabled>Center boat</button>
-          <a id="mapsLink" class="button-like disabled" aria-disabled="true" href="#" target="_blank" rel="noreferrer">Open maps</a>
-        </div>
-      </section>
+      </div>
     </main>
 
     <script

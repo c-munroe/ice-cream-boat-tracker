@@ -154,17 +154,19 @@ button.danger:hover:not(:disabled) {
   position: relative;
 }
 
+.map-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#map,
 .map-canvas {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
   background: #bfe9f0;
-}
-
-#map {
-  width: 100%;
-  height: 100%;
 }
 
 .leaflet-container {
@@ -202,17 +204,27 @@ button.danger:hover:not(:disabled) {
   max-width: none !important;
 }
 
-.map-panel {
+.map-ui-overlay {
   position: absolute;
-  left: clamp(12px, 3vw, 28px);
-  bottom: clamp(12px, 3vw, 28px);
-  width: min(420px, calc(100vw - 24px));
+  top: 16px;
+  left: 16px;
+  width: min(420px, calc(100vw - 32px));
+  z-index: 1200;
+  pointer-events: auto;
+}
+
+.map-ui-overlay button,
+.map-ui-overlay .coordinates-display {
+  pointer-events: auto;
+}
+
+.map-panel {
+  width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 16px;
   background: rgba(255, 255, 255, 0.95);
   box-shadow: var(--shadow);
-  z-index: 10;
 }
 
 .panel-title {
@@ -423,11 +435,13 @@ a:focus-visible {
     min-height: calc(100dvh - 64px);
   }
 
-  .map-panel {
+  .map-ui-overlay {
+    top: 10px;
     left: 10px;
-    right: 10px;
-    bottom: 10px;
-    width: auto;
+    width: calc(100vw - 20px);
+  }
+
+  .map-panel {
     padding: 14px;
   }
 
