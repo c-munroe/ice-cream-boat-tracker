@@ -16,8 +16,7 @@ export const appSettings = Object.freeze({
   defaultZoom: 12,
   staleAfterMinutes: 30,
   markerIcon: "Images/logo192.png",
-  sendIntervalMs: 10000,
+  sendIntervalMs: 60000,
   minimumSendIntervalMs: 5000,
   highAccuracy: true
 });
-
