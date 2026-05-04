@@ -1,7 +1,10 @@
 {
   "name": "Ice Cream Boat Tracker",
   "short_name": "Boat Tracker",
+  "description": "Live public map for the Ice Cream Boat.",
+  "id": "./",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#e7f7f8",
   "theme_color": "#083344",
@@ -18,4 +21,3 @@
     }
   ]
 }
-

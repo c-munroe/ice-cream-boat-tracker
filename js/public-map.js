@@ -5,8 +5,15 @@ const state = {
   map: null,
   marker: null,
   latest: null,
+  latestData: null,
   hasCentered: false
 };
+
+const STATUS_THRESHOLDS_MS = Object.freeze({
+  live: 60 * 1000,
+  recent: 5 * 60 * 1000,
+  stale: 20 * 60 * 1000
+});
 
 const elements = {
   connectionStatus: document.querySelector("#connectionStatus"),
@@ -15,12 +22,21 @@ const elements = {
   accuracy: document.querySelector("#accuracy"),
   lastUpdated: document.querySelector("#lastUpdated"),
   centerButton: document.querySelector("#centerButton"),
-  mapsLink: document.querySelector("#mapsLink"),
-  liveDot: document.querySelector(".live-dot")
+  liveDot: document.querySelector(".live-dot"),
+  installPrompt: document.querySelector("#installPrompt"),
+  installGotIt: document.querySelector("#installGotIt"),
+  installDontShow: document.querySelector("#installDontShow")
 };
 
 initMap();
 initRealtimeLocation();
+initInstallPrompt();
+
+window.setInterval(() => {
+  if (state.latestData) {
+    renderLocation(state.latestData);
+  }
+}, 15000);
 
 elements.centerButton.addEventListener("click", () => {
   if (!state.latest) return;
@@ -81,7 +97,8 @@ async function initRealtimeLocation() {
           return;
         }
 
-        renderLocation(snapshot.val());
+        state.latestData = snapshot.val();
+        renderLocation(state.latestData);
       },
       (error) => {
         setConnectionState("Firebase error");
@@ -106,15 +123,9 @@ function renderLocation(data) {
   }
 
   const location = { lat, lng };
-  const ageMs = Number.isFinite(timestamp) ? Date.now() - timestamp : Number.POSITIVE_INFINITY;
-  const staleMs = 30 * 1000;
-  const isStale = ageMs > staleMs;
-  const status =
-    data.status === "stopped"
-      ? "Tracking Off"
-      : isStale
-        ? "Location stale — check phone screen/location permissions."
-        : "BROADCASTING LIVE";
+  const gpsTimestamp = Number(data.gpsTimestamp);
+  const statusTimestamp = Number.isFinite(gpsTimestamp) ? gpsTimestamp : timestamp;
+  const statusInfo = getLocationStatus(statusTimestamp, data.status);
 
   state.latest = location;
   state.marker.setLatLng([lat, lng]);
@@ -127,18 +138,18 @@ function renderLocation(data) {
   }
 
   elements.centerButton.disabled = false;
-  elements.mapsLink.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-  elements.mapsLink.classList.remove("disabled");
-  elements.mapsLink.removeAttribute("aria-disabled");
 
-  elements.liveDot.classList.toggle("is-live", !isStale && data.status !== "stopped");
-  elements.liveDot.classList.toggle("is-stale", isStale);
-  setConnectionState(status);
+  elements.liveDot.classList.toggle("is-live", statusInfo.tone === "live");
+  elements.liveDot.classList.toggle("is-recent", statusInfo.tone === "recent");
+  elements.liveDot.classList.toggle("is-stale", statusInfo.tone === "stale");
+  elements.liveDot.classList.toggle("is-offline", statusInfo.tone === "offline");
+  elements.liveDot.classList.toggle("is-off", statusInfo.tone === "off");
+  setConnectionState(statusInfo.label);
   setStatus(
-    status,
+    statusInfo.label,
     formatCoordinates(lat, lng),
     formatAccuracy(data.accuracy),
-    Number.isFinite(timestamp) ? formatAge(timestamp) : "Unknown"
+    Number.isFinite(statusTimestamp) ? formatAge(statusTimestamp) : "Unknown"
   );
 }
 
@@ -173,4 +184,58 @@ function formatAge(timestamp) {
 
   const elapsedHours = Math.round(elapsedMinutes / 60);
   return `${elapsedHours} hr ago`;
+}
+
+function getLocationStatus(timestamp, trackerStatus) {
+  if (trackerStatus === "stopped") {
+    return { label: "Tracking Off", tone: "off" };
+  }
+
+  if (!Number.isFinite(timestamp)) {
+    return { label: "Waiting for location", tone: "offline" };
+  }
+
+  const ageMs = Math.max(0, Date.now() - timestamp);
+
+  if (ageMs < STATUS_THRESHOLDS_MS.live) {
+    return { label: "Live now", tone: "live" };
+  }
+
+  if (ageMs < STATUS_THRESHOLDS_MS.recent) {
+    return { label: "Updated recently", tone: "recent" };
+  }
+
+  if (ageMs < STATUS_THRESHOLDS_MS.stale) {
+    return { label: "Location delayed", tone: "stale" };
+  }
+
+  return { label: "Tracker offline", tone: "offline" };
+}
+
+function initInstallPrompt() {
+  if (!elements.installPrompt) return;
+
+  const storageKey = "iceCreamBoatInstallPromptDismissed";
+  const mobileQuery = window.matchMedia("(max-width: 760px)");
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
+
+  if (!mobileQuery.matches || isStandalone || window.localStorage.getItem(storageKey) === "true") {
+    return;
+  }
+
+  elements.installPrompt.hidden = false;
+  window.requestAnimationFrame(() => {
+    elements.installPrompt.classList.add("is-visible");
+  });
+
+  const dismiss = () => {
+    window.localStorage.setItem(storageKey, "true");
+    elements.installPrompt.classList.remove("is-visible");
+    elements.installPrompt.hidden = true;
+  };
+
+  elements.installGotIt.addEventListener("click", dismiss);
+  elements.installDontShow.addEventListener("click", dismiss);
 }

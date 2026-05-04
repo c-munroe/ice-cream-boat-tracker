@@ -24,6 +24,12 @@ const elements = {
   userUid: document.querySelector("#userUid")
 };
 
+const STATUS_THRESHOLDS_MS = Object.freeze({
+  live: 60 * 1000,
+  recent: 5 * 60 * 1000,
+  stale: 20 * 60 * 1000
+});
+
 const state = {
   auth: null,
   db: null,
@@ -38,6 +44,7 @@ const state = {
   permissionDenied: false,
   locationUnavailable: false,
   statusTimer: null,
+  sendTimer: null,
   wakeLock: null
 };
 
@@ -60,6 +67,11 @@ elements.signOutButton.addEventListener("click", async () => {
 
 elements.startButton.addEventListener("click", startTracking);
 elements.stopButton.addEventListener("click", stopTracking);
+elements.sendInterval.addEventListener("change", () => {
+  if (state.watchId !== null) {
+    startSendTimer();
+  }
+});
 
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible" && state.watchId !== null) {
@@ -168,6 +180,7 @@ async function startTracking() {
         state.trackingStartedAt = 0;
         navigator.geolocation.clearWatch(state.watchId);
         state.watchId = null;
+        stopSendTimer();
         await releaseWakeLock();
       }
       renderBroadcastStatus();
@@ -175,11 +188,12 @@ async function startTracking() {
     },
     {
       enableHighAccuracy: appSettings.highAccuracy,
-      maximumAge: 5000,
-      timeout: 20000
+      maximumAge: 15000,
+      timeout: 60000
     }
   );
 
+  startSendTimer();
   updateTrackingButtons();
 }
 
@@ -189,6 +203,7 @@ async function stopTracking() {
     state.watchId = null;
   }
 
+  stopSendTimer();
   state.trackingStartedAt = 0;
 
   if (state.lastPosition && state.user) {
@@ -207,10 +222,7 @@ async function stopTracking() {
 
 async function sendPosition(position, status, force = false) {
   const now = Date.now();
-  const throttleMs = Math.max(
-    appSettings.minimumSendIntervalMs,
-    Number(elements.sendInterval.value) * 1000 || appSettings.sendIntervalMs
-  );
+  const throttleMs = getSendIntervalMs();
 
   if (!force && now - state.lastSentAt < throttleMs) return;
 
@@ -258,14 +270,30 @@ function startStatusTimer() {
   state.statusTimer = window.setInterval(renderBroadcastStatus, 1000);
 }
 
+function startSendTimer() {
+  stopSendTimer();
+  const intervalMs = getSendIntervalMs();
+  state.sendTimer = window.setInterval(() => {
+    if (state.watchId === null || !state.lastPosition || !state.user) return;
+    sendPosition(state.lastPosition, "tracking", true);
+  }, intervalMs);
+}
+
+function stopSendTimer() {
+  if (!state.sendTimer) return;
+  window.clearInterval(state.sendTimer);
+  state.sendTimer = null;
+}
+
 function renderBroadcastStatus() {
   const isTracking = state.watchId !== null;
   const hasPosition = Boolean(state.lastPosition);
   const ageSeconds = hasPosition ? Math.max(0, Math.floor((Date.now() - state.lastPositionAt) / 1000)) : null;
+  const ageMs = Number.isFinite(ageSeconds) ? ageSeconds * 1000 : Number.POSITIVE_INFINITY;
   const secondsSinceStart = state.trackingStartedAt
     ? Math.max(0, Math.floor((Date.now() - state.trackingStartedAt) / 1000))
     : 0;
-  const isStale = isTracking && ((hasPosition && ageSeconds > 30) || (!hasPosition && secondsSinceStart > 30));
+  const secondsSinceStartMs = secondsSinceStart * 1000;
 
   if (hasPosition) {
     const { latitude, longitude } = state.lastPosition.coords;
@@ -296,13 +324,28 @@ function renderBroadcastStatus() {
     return;
   }
 
-  if (isStale) {
+  if (isTracking && ((hasPosition && ageMs >= STATUS_THRESHOLDS_MS.stale) || (!hasPosition && secondsSinceStartMs >= STATUS_THRESHOLDS_MS.stale))) {
+    setBroadcastMode(
+      "is-offline",
+      "Tracker Offline",
+      "No fresh GPS update for more than 20 minutes.",
+      "Check the phone battery, screen, cellular signal, and location permissions."
+    );
+    return;
+  }
+
+  if (isTracking && ((hasPosition && ageMs >= STATUS_THRESHOLDS_MS.recent) || (!hasPosition && secondsSinceStartMs >= STATUS_THRESHOLDS_MS.recent))) {
     setBroadcastMode(
       "is-stale",
-      "Location Stale",
-      "Location stale — check phone screen/location permissions.",
-      "GPS updates stopped for more than 30 seconds."
+      "Location Delayed",
+      "Waiting for a fresh GPS update.",
+      "If this continues, check the phone screen, cellular signal, and location permissions."
     );
+    return;
+  }
+
+  if (isTracking && hasPosition && ageMs >= STATUS_THRESHOLDS_MS.live) {
+    setBroadcastMode("is-recent", "Recently Updated", "GPS update is a little delayed, but tracking is still on.", "");
     return;
   }
 
@@ -320,7 +363,7 @@ function renderBroadcastStatus() {
 }
 
 function setBroadcastMode(modeClass, label, message, warning) {
-  elements.broadcastPanel.classList.remove("is-off", "is-live", "is-stale", "is-warning");
+  elements.broadcastPanel.classList.remove("is-off", "is-live", "is-recent", "is-stale", "is-offline", "is-warning");
   elements.broadcastPanel.classList.add(modeClass);
   elements.broadcastLabel.textContent = label;
   elements.broadcastMessage.textContent = message;
@@ -372,6 +415,13 @@ function formatElapsed(seconds) {
   const minutes = Math.floor(seconds / 60);
   if (minutes === 1) return "1 minute ago";
   return `${minutes} minutes ago`;
+}
+
+function getSendIntervalMs() {
+  return Math.max(
+    appSettings.minimumSendIntervalMs,
+    Number(elements.sendInterval.value) * 1000 || appSettings.sendIntervalMs
+  );
 }
 
 async function requestWakeLock() {

@@ -148,6 +148,53 @@ button.danger:hover:not(:disabled) {
   font-weight: 800;
 }
 
+.install-prompt {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1250;
+  display: none;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+}
+
+.install-prompt.is-visible {
+  display: flex;
+}
+
+.install-prompt h2 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  line-height: 1.15;
+}
+
+.install-prompt p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.install-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.install-actions button {
+  min-height: 38px;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
 .map-shell {
   height: calc(100dvh - 72px);
   min-height: 520px;
@@ -255,9 +302,24 @@ button.danger:hover:not(:disabled) {
   animation: pulse-live 1.2s ease-out infinite;
 }
 
+.live-dot.is-recent {
+  background: var(--water);
+  box-shadow: 0 0 0 5px rgba(14, 116, 144, 0.16);
+}
+
 .live-dot.is-stale {
   background: #c46a00;
   box-shadow: 0 0 0 5px rgba(196, 106, 0, 0.16);
+}
+
+.live-dot.is-offline {
+  background: #7a1a12;
+  box-shadow: 0 0 0 5px rgba(122, 26, 18, 0.16);
+}
+
+.live-dot.is-off {
+  background: #8a9aa3;
+  box-shadow: 0 0 0 5px rgba(138, 154, 163, 0.16);
 }
 
 .location-readout,
@@ -455,6 +517,16 @@ dd {
   background: rgba(255, 255, 255, 0.14);
 }
 
+.broadcast-panel.is-recent {
+  border-color: var(--water);
+  background: #e8f7f9;
+}
+
+.broadcast-panel.is-recent .broadcast-dot {
+  background: var(--water);
+  box-shadow: 0 0 0 7px rgba(14, 116, 144, 0.16);
+}
+
 .broadcast-panel.is-stale {
   border-color: #c46a00;
   background: #fff7ed;
@@ -473,6 +545,16 @@ dd {
 .broadcast-panel.is-warning .broadcast-dot {
   background: var(--danger);
   box-shadow: 0 0 0 7px rgba(180, 35, 24, 0.16);
+}
+
+.broadcast-panel.is-offline {
+  border-color: #7a1a12;
+  background: #fff1f0;
+}
+
+.broadcast-panel.is-offline .broadcast-dot {
+  background: #7a1a12;
+  box-shadow: 0 0 0 7px rgba(122, 26, 18, 0.16);
 }
 
 .auth-form,
@@ -551,28 +633,46 @@ a:focus-visible {
 
 @media (max-width: 640px) {
   .app-header {
-    height: 64px;
-    gap: 10px;
+    height: 52px;
+    gap: 8px;
+    padding: 6px 10px;
+    border-bottom-width: 3px;
+  }
+
+  .brand {
+    gap: 8px;
+  }
+
+  .brand img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .brand span {
+    gap: 0;
   }
 
   .brand strong {
-    max-width: 58vw;
+    max-width: 56vw;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: 0.92rem;
   }
 
   .brand small {
-    font-size: 0.78rem;
+    font-size: 0.68rem;
   }
 
   .header-actions a {
-    min-height: 38px;
-    padding: 0 10px;
+    min-height: 30px;
+    border-radius: 7px;
+    padding: 0 8px;
+    font-size: 0.82rem;
   }
 
   .map-shell,
   .tracker-shell {
-    min-height: calc(100dvh - 64px);
+    min-height: calc(100dvh - 52px);
   }
 
   .map-ui-overlay {
@@ -582,15 +682,96 @@ a:focus-visible {
   }
 
   .map-panel {
-    padding: 14px;
+    padding: 12px;
+  }
+
+  .panel-title {
+    margin-bottom: 10px;
+  }
+
+  .panel-title h1 {
+    font-size: 0.98rem;
+  }
+
+  .map-page .coordinate-row,
+  .map-page .accuracy-row {
+    display: none;
+  }
+
+  .map-page .button-row > * {
+    flex-basis: 100%;
+  }
+
+  .install-prompt {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    display: none;
+    align-items: stretch;
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .install-prompt.is-visible {
+    display: flex;
+  }
+
+  .install-actions {
+    width: 100%;
+  }
+
+  .install-actions button {
+    flex: 1 1 0;
+  }
+
+  .tracker-shell {
+    padding: 10px;
+    place-items: start center;
+  }
+
+  .tracker-panel {
+    padding: 12px;
+  }
+
+  .tracker-heading {
+    gap: 10px;
+    padding-bottom: 12px;
   }
 
   .auth-form {
     grid-template-columns: 1fr;
   }
 
+  .broadcast-panel {
+    margin-top: 12px;
+    padding: 12px;
+  }
+
+  .broadcast-status-line {
+    gap: 10px;
+  }
+
+  .broadcast-dot {
+    width: 16px;
+    height: 16px;
+  }
+
+  .broadcast-panel h2 {
+    font-size: clamp(1.35rem, 8vw, 2rem);
+  }
+
+  .broadcast-message {
+    margin-top: 10px;
+    font-size: 0.98rem;
+  }
+
   .broadcast-readout {
+    margin-top: 10px;
     grid-template-columns: 1fr;
+  }
+
+  .broadcast-readout div {
+    padding: 10px;
   }
 
   .tracker-heading {
@@ -598,8 +779,27 @@ a:focus-visible {
   }
 
   .tracker-heading img {
-    width: 58px;
-    height: 58px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .tracker-heading h1 {
+    font-size: 1.15rem;
+  }
+
+  .tracker-heading p {
+    font-size: 0.85rem;
+  }
+
+  .auth-form,
+  .tracker-controls {
+    gap: 10px;
+    padding-top: 12px;
+  }
+
+  input,
+  select {
+    min-height: 42px;
   }
 
   .location-readout div,

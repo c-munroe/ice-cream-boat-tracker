@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#083344">
+    <meta name="apple-mobile-web-app-title" content="Boat Tracker">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Ice Cream Boat Tracker</title>
     <link rel="icon" href="Images/favicon.ico">
     <link rel="apple-touch-icon" href="Images/logo192.png">
@@ -39,11 +42,11 @@
               <h1 id="statusText">Waiting for location</h1>
             </div>
             <dl class="location-readout coordinates-display">
-              <div>
+              <div class="coordinate-row">
                 <dt>Coordinates</dt>
                 <dd id="coordinates">Not available</dd>
               </div>
-              <div>
+              <div class="accuracy-row">
                 <dt>Accuracy</dt>
                 <dd id="accuracy">Not available</dd>
               </div>
@@ -54,11 +57,21 @@
             </dl>
             <div class="button-row">
               <button id="centerButton" type="button" disabled>Center boat</button>
-              <a id="mapsLink" class="button-like disabled" aria-disabled="true" href="#" target="_blank" rel="noreferrer">Open maps</a>
             </div>
           </section>
         </div>
       </div>
+
+      <section id="installPrompt" class="install-prompt" aria-labelledby="installPromptTitle" hidden>
+        <div>
+          <h2 id="installPromptTitle">Save this tracker for quick access</h2>
+          <p>On iPhone: tap the Share button, scroll down, then tap Add to Home Screen. This lets you open the tracker like an app next time.</p>
+        </div>
+        <div class="install-actions">
+          <button id="installGotIt" type="button">Got it</button>
+          <button id="installDontShow" class="secondary" type="button">Don't show again</button>
+        </div>
+      </section>
     </main>
 
     <script
